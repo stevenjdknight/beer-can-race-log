@@ -13,7 +13,7 @@ st.title("🍺 Beer Can Scrimmage Race Entry Form")
 
 # --- AUTH ---
 SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-service_account_info = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
+service_account_info = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
 creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPE)
 gc = gspread.authorize(creds)
 sh = gc.open_by_url("https://docs.google.com/spreadsheets/d/1mAUmYrkc1n37vrTkiZ-J8OsI5SnA7r-nYmdPIR04OZY/edit")
