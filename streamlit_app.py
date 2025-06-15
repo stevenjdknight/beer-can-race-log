@@ -3,13 +3,26 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime, time, timedelta
-import json  # <-- Required for secrets handling
+import json
 
 # --- CONFIG ---
 st.set_page_config(page_title="🍺 Beer Can Race Log", layout="wide")
 
 # --- TITLE ---
 st.title("🍺 Beer Can Scrimmage Race Entry Form")
+
+# --- SCORING SYSTEM INFO ---
+st.markdown("""
+### 🏁 Scoring System
+
+Each race is scored based on the number of participating boats:
+- **1 boat** → 1 point  
+- **2 boats** → 2 pts for 1st, 1 for 2nd  
+- **3 boats** → 3 pts / 2 pts / 1 pt  
+- **4+ boats** → 4 pts for 1st, 3 pts for 2nd, 2 pts for 3rd, 1 pt for all others  
+
+Scoring is ranked by **Corrected Time**.
+""")
 
 # --- AUTH ---
 SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
@@ -40,7 +53,7 @@ with st.form("race_entry_form"):
         (datetime.combine(datetime.today(), time(18, 1)) + timedelta(minutes=i)).time()
         for i in range((22 - 18) * 60 - 1)
     ]
-    finish_time = st.selectbox("Finish Time", finish_time_options, index=59)  # default to 19:00
+    finish_time = st.selectbox("Finish Time", finish_time_options, index=59)
 
     elapsed_time = st.text_input("Elapsed Time (HH:MM:SS)")
     corrected_time = st.text_input("Corrected Time (HH:MM:SS)")
@@ -73,3 +86,45 @@ with st.form("race_entry_form"):
             ]
             worksheet.append_row(row)
             st.success("Race entry submitted successfully!")
+
+# --- WEEKLY LEADERBOARD ---
+st.subheader("📊 Weekly Leaderboard")
+
+# Load all data
+try:
+    data = pd.DataFrame(worksheet.get_all_records())
+    data["Race Date"] = pd.to_datetime(data["Race Date"])
+    latest_friday = data["Race Date"].max()
+    week_data = data[data["Race Date"] == latest_friday].copy()
+
+    # Clean and sort by Corrected Time
+    week_data = week_data[week_data["Corrected Time"].str.strip() != ""]
+    week_data["Corrected Time"] = pd.to_timedelta(week_data["Corrected Time"])
+    week_data = week_data.sort_values("Corrected Time")
+
+    num_boats = len(week_data)
+
+    def assign_points(rank, total):
+        if total == 1:
+            return 1
+        elif total == 2:
+            return 2 - rank if rank < 2 else 0
+        elif total == 3:
+            return max(0, 3 - rank)
+        elif total >= 4:
+            if rank == 0:
+                return 4
+            elif rank == 1:
+                return 3
+            elif rank == 2:
+                return 2
+            else:
+                return 1
+        return 0
+
+    week_data["Points"] = [assign_points(i, num_boats) for i in range(num_boats)]
+
+    st.dataframe(week_data[["Skipper Name or Nickname", "Boat Name", "Corrected Time", "Points"]])
+
+except Exception as e:
+    st.warning(f"Could not load leaderboard: {e}")
