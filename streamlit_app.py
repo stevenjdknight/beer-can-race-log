@@ -27,7 +27,7 @@ with st.form("race_entry_form"):
     boat_name = st.text_input("Boat Name")
     skipper_name = st.text_input("Skipper Name or Nickname")
     boat_type = st.text_input("Boat Type")
-    
+
     # --- START TIME: 18:00 to 20:00, 1-minute steps ---
     start_time_options = [
         (datetime.combine(datetime.today(), time(18, 0)) + timedelta(minutes=i)).time()
@@ -35,14 +35,19 @@ with st.form("race_entry_form"):
     ]
     start_time = st.selectbox("Start Time", start_time_options, index=0)
 
-    finish_time = st.time_input("Finish Time", value=time(19, 0))
-    
+    # --- FINISH TIME: 18:01 to 22:00, 1-minute steps ---
+    finish_time_options = [
+        (datetime.combine(datetime.today(), time(18, 1)) + timedelta(minutes=i)).time()
+        for i in range((22 - 18) * 60 - 1)
+    ]
+    finish_time = st.selectbox("Finish Time", finish_time_options, index=59)  # default to 19:00
+
     elapsed_time = st.text_input("Elapsed Time (HH:MM:SS)")
     corrected_time = st.text_input("Corrected Time (HH:MM:SS)")
-    
+
     island_options = ["Moon", "Duck", "Ramsey", "First Island", "Second Island", "Third Island", "Fourth Island", "Gull Rock", "Snug", "Spooky"]
     marks = [st.selectbox(f"Mark {i+1}", options=[""] + island_options, key=f"mark{i}") for i in range(6)]
-    
+
     comments = st.text_area("Comments or Improvement Ideas")
 
     submitted = st.form_submit_button("Submit Entry")
