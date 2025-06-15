@@ -41,22 +41,19 @@ with st.form("race_entry_form"):
     skipper_name = st.text_input("Skipper Name or Nickname")
     boat_type = st.text_input("Boat Type")
 
-    # --- START TIME: 18:00 to 20:00, 1-minute steps ---
+    # --- START TIME: 18:00 to 20:00 ---
     start_time_options = [
         (datetime.combine(datetime.today(), time(18, 0)) + timedelta(minutes=i)).time()
         for i in range((20 - 18) * 60 + 1)
     ]
     start_time = st.selectbox("Start Time", start_time_options, index=0)
 
-    # --- FINISH TIME: 18:01 to 22:00, 1-minute steps ---
+    # --- FINISH TIME: 18:01 to 22:00 ---
     finish_time_options = [
         (datetime.combine(datetime.today(), time(18, 1)) + timedelta(minutes=i)).time()
         for i in range((22 - 18) * 60 - 1)
     ]
     finish_time = st.selectbox("Finish Time", finish_time_options, index=59)
-
-    elapsed_time = st.text_input("Elapsed Time (HH:MM:SS)")
-    corrected_time = st.text_input("Corrected Time (HH:MM:SS)")
 
     island_options = ["Moon", "Duck", "Ramsey", "First Island", "Second Island", "Third Island", "Fourth Island", "Gull Rock", "Snug", "Spooky"]
     marks = [st.selectbox(f"Mark {i+1}", options=[""] + island_options, key=f"mark{i}") for i in range(6)]
@@ -71,6 +68,16 @@ with st.form("race_entry_form"):
         elif start_time <= time(17, 59):
             st.error("Start time must be after 17:59.")
         else:
+            # Calculate elapsed and corrected time
+            today = datetime.today()
+            start_dt = datetime.combine(today, start_time)
+            finish_dt = datetime.combine(today, finish_time)
+            elapsed = finish_dt - start_dt
+
+            # ⛳ Placeholder index — replace this later with a lookup
+            index = 1.00
+            corrected = elapsed * index
+
             row = [
                 race_date.strftime("%Y-%m-%d"),
                 boat_name,
@@ -78,8 +85,8 @@ with st.form("race_entry_form"):
                 boat_type,
                 start_time.strftime("%H:%M"),
                 finish_time.strftime("%H:%M"),
-                elapsed_time,
-                corrected_time,
+                str(elapsed),
+                str(corrected),
                 *marks,
                 comments,
                 datetime.now().isoformat()
@@ -90,16 +97,15 @@ with st.form("race_entry_form"):
 # --- WEEKLY LEADERBOARD ---
 st.subheader("📊 Weekly Leaderboard")
 
-# Load all data
 try:
     data = pd.DataFrame(worksheet.get_all_records())
     data["Race Date"] = pd.to_datetime(data["Race Date"])
     latest_friday = data["Race Date"].max()
     week_data = data[data["Race Date"] == latest_friday].copy()
 
-    # Clean and sort by Corrected Time
     week_data = week_data[week_data["Corrected Time"].str.strip() != ""]
     week_data["Corrected Time"] = pd.to_timedelta(week_data["Corrected Time"])
+    week_data["Elapsed Time"] = pd.to_timedelta(week_data["Elapsed Time"])
     week_data = week_data.sort_values("Corrected Time")
 
     num_boats = len(week_data)
@@ -124,7 +130,13 @@ try:
 
     week_data["Points"] = [assign_points(i, num_boats) for i in range(num_boats)]
 
-    st.dataframe(week_data[["Skipper Name or Nickname", "Boat Name", "Corrected Time", "Points"]])
+    st.dataframe(week_data[[
+        "Skipper Name or Nickname",
+        "Boat Name",
+        "Elapsed Time",
+        "Corrected Time",
+        "Points"
+    ]])
 
 except Exception as e:
     st.warning(f"Could not load leaderboard: {e}")
