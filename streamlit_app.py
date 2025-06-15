@@ -3,6 +3,7 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime, time
+import json  # <-- Required for secrets handling
 
 # --- CONFIG ---
 st.set_page_config(page_title="🍺 Beer Can Race Log", layout="wide")
@@ -12,7 +13,8 @@ st.title("🍺 Beer Can Scrimmage Race Entry Form")
 
 # --- AUTH ---
 SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-creds = Credentials.from_service_account_file("beer-can-race-log-656ad9063905.json", scopes=SCOPE)
+service_account_info = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
+creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPE)
 gc = gspread.authorize(creds)
 sh = gc.open_by_url("https://docs.google.com/spreadsheets/d/1mAUmYrkc1n37vrTkiZ-J8OsI5SnA7r-nYmdPIR04OZY/edit")
 worksheet = sh.worksheet("Race Entries")
