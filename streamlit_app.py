@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import json  # <-- Required for secrets handling
 
 # --- CONFIG ---
@@ -28,7 +28,13 @@ with st.form("race_entry_form"):
     skipper_name = st.text_input("Skipper Name or Nickname")
     boat_type = st.text_input("Boat Type")
     
-    start_time = st.time_input("Start Time", value=time(18, 0))
+    # --- START TIME: 18:00 to 20:00, 1-minute steps ---
+    start_time_options = [
+        (datetime.combine(datetime.today(), time(18, 0)) + timedelta(minutes=i)).time()
+        for i in range((20 - 18) * 60 + 1)
+    ]
+    start_time = st.selectbox("Start Time", start_time_options, index=0)
+
     finish_time = st.time_input("Finish Time", value=time(19, 0))
     
     elapsed_time = st.text_input("Elapsed Time (HH:MM:SS)")
