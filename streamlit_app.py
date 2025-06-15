@@ -68,14 +68,14 @@ with st.form("race_entry_form"):
         elif start_time <= time(17, 59):
             st.error("Start time must be after 17:59.")
         else:
-            # Calculate elapsed and corrected time
+            # Calculate times
             today = datetime.today()
             start_dt = datetime.combine(today, start_time)
             finish_dt = datetime.combine(today, finish_time)
             elapsed = finish_dt - start_dt
 
-            # ⛳ Placeholder index — replace this later with a lookup
-            index = 1.00
+            # Placeholder for future handicap logic
+            index = 1.0
             corrected = elapsed * index
 
             row = [
@@ -98,7 +98,13 @@ with st.form("race_entry_form"):
 st.subheader("📊 Weekly Leaderboard")
 
 try:
-    data = pd.DataFrame(worksheet.get_all_records())
+    expected_headers = [
+        "Race Date", "Boat Name", "Skipper Name or Nickname", "Boat Type",
+        "Start Time", "Finish Time", "Elapsed Time", "Corrected Time",
+        "Mark 1", "Mark 2", "Mark 3", "Mark 4", "Mark 5", "Mark 6",
+        "Comments or Improvement Ideas", "Submission Timestamp"
+    ]
+    data = pd.DataFrame(worksheet.get_all_records(expected_headers=expected_headers))
     data["Race Date"] = pd.to_datetime(data["Race Date"])
     latest_friday = data["Race Date"].max()
     week_data = data[data["Race Date"] == latest_friday].copy()
