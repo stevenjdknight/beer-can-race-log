@@ -34,16 +34,16 @@ worksheet = sh.worksheet("Race Entries")
 
 # --- PHRF Ratings (simplified multiplier: 1 + rating/10000) ---
 phrf_index = {
-    "Laser": 126,
-    "Hunter 22": 216,
-    "Tanzer 22": 243,
-    "Schock 23": 174,
-    "Crown 26": 218,
-    "Star": 144,
-    "CL16": 255,
     "Albacore": 239,
-    "Wayfarer": 234,
+    "CL16": 255,
+    "Crown 26": 218,
+    "Hunter 22": 216,
+    "Laser": 126,
+    "Schock 23": 174,
+    "Star": 144,
     "Sirius 21": 225
+    "Tanzer 22": 243,
+    "Wayfarer": 234,
 }
 
 # --- FORM ---
@@ -69,7 +69,7 @@ with st.form("race_entry_form"):
     ]
     finish_time = st.selectbox("Finish Time", finish_time_options, index=59)
 
-    island_options = ["Moon", "Duck", "Ramsey", "First Island", "Second Island", "Third Island", "Fourth Island", "Gull Rock", "Snug", "Spooky"]
+    island_options = ["Potter Island", "Swiss Island", "McCrea Island", "Norway Island", "Berry Island", "Swansea Island", "Galliard, Bass & Pike Island", "Gull Rock", "Snug", "Spooky"]
     marks = [st.selectbox(f"Mark {i+1}", options=[""] + island_options, key=f"mark{i}") for i in range(6)]
 
     comments = st.text_area("Comments or Improvement Ideas")
