@@ -41,7 +41,7 @@ phrf_index = {
     "Laser": 126,
     "Schock 23": 174,
     "Star": 144,
-    "Sirius 21": 225
+    "Sirius 21": 225,
     "Tanzer 22": 243,
     "Wayfarer": 234,
 }
