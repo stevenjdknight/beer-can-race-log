@@ -13,24 +13,19 @@ st.title("🍺 Beer Can Scrimmage Race Entry Form")
 
 # --- INSTRUCTIONS ---
 st.markdown("""
-### ⛵ Instructions
-To log a race entry, complete the form below with:
-- **Date** of the race (Fridays only)
-- **Boat Name** and **Skipper Name**
-- **Boat Type** (choose from list)
-- **Start** and **Finish** times
-- **Rounded Islands** (Marks 1–6)
-- Any **comments** or improvement suggestions
+### ℹ️ Instructions
+To log your race:
+- Ensure the race was held on a **Friday**
+- Provide start and finish times using the dropdowns
+- Choose up to 6 islands (marks) rounded during the race
+- Your race result will appear on the weekly leaderboard
 
-After submission:
-- A **weekly leaderboard** shows last Friday's race (until replaced)
-- An **annual leaderboard** accumulates points all season
+**Note:** Both weekly and annual leaderboards are displayed. If no new entry is submitted this week, the last race's results will continue to show.
 """)
 
 # --- SCORING SYSTEM INFO ---
 st.markdown("""
-### 🌟 Scoring System
-
+### 🏁 Scoring System
 Each race is scored based on the number of participating boats:
 - **1 boat** → 1 point  
 - **2 boats** → 2 pts for 1st, 1 for 2nd  
@@ -60,7 +55,7 @@ phrf_index = {
     "Sirius 21": 225,
     "Tanzer 22": 243,
     "Wayfarer": 234,
-    "Not Listed - Add in comments": 0,
+    "Not Listed - Add in comments": 000,
 }
 
 # --- FORM ---
@@ -72,14 +67,12 @@ with st.form("race_entry_form"):
     skipper_name = st.text_input("Skipper Name or Nickname")
     boat_type = st.selectbox("Boat Type", list(phrf_index.keys()))
 
-    # --- START TIME: 18:00 to 20:00 ---
     start_time_options = [
         (datetime.combine(datetime.today(), time(18, 0)) + timedelta(minutes=i)).time()
         for i in range((20 - 18) * 60 + 1)
     ]
     start_time = st.selectbox("Start Time", start_time_options, index=0)
 
-    # --- FINISH TIME: 18:01 to 22:00 ---
     finish_time_options = [
         (datetime.combine(datetime.today(), time(18, 1)) + timedelta(minutes=i)).time()
         for i in range((22 - 18) * 60 - 1)
@@ -172,6 +165,35 @@ try:
         "Corrected Time",
         "Points"
     ]])
+
+    # --- ANNUAL LEADERBOARD ---
+    st.subheader("\U0001f3c6 Annual Leaderboard")
+    data = data[data["Corrected Time"].str.strip() != ""]
+    data["Corrected Time"] = pd.to_timedelta(data["Corrected Time"])
+    data["Elapsed Time"] = pd.to_timedelta(data["Elapsed Time"])
+    data = data.sort_values("Race Date")
+    data["Race Year"] = data["Race Date"].dt.year
+
+    def compute_annual_points(df):
+        result_rows = []
+        for date, group in df.groupby("Race Date"):
+            group = group.sort_values("Corrected Time").reset_index(drop=True)
+            total = len(group)
+            for i, row in group.iterrows():
+                points = assign_points(i, total)
+                result_rows.append({
+                    "Skipper Name or Nickname": row["Skipper Name or Nickname"],
+                    "Race Year": row["Race Year"],
+                    "Points": points
+                })
+        result_df = pd.DataFrame(result_rows)
+        return result_df.groupby(["Race Year", "Skipper Name or Nickname"]).sum().reset_index()
+
+    annual = compute_annual_points(data)
+    latest_year = annual["Race Year"].max()
+    leaderboard = annual[annual["Race Year"] == latest_year].sort_values("Points", ascending=False)
+
+    st.dataframe(leaderboard)
 
 except Exception as e:
     st.warning(f"Could not load leaderboard: {e}")
