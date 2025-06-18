@@ -11,6 +11,20 @@ st.set_page_config(page_title="🍺 Beer Can Race Log", layout="wide")
 # --- TITLE ---
 st.title("🍺 Beer Can Scrimmage Race Entry Form")
 
+# --- INSTRUCTIONS ---
+st.markdown("""
+Welcome to the Beer Can Scrimmage Race Log App! 
+
+To submit a race entry:
+1. Fill in your boat and skipper info.
+2. Select start and finish times.
+3. Choose up to 6 islands rounded.
+4. Submit your entry by clicking the button at the bottom.
+
+A **Weekly Leaderboard** is shown for the most recent race week.
+An **Annual Leaderboard** will also be displayed at the bottom to track scores over the season.
+""")
+
 # --- SCORING SYSTEM INFO ---
 st.markdown("""
 ### 🏁 Scoring System
@@ -39,12 +53,11 @@ phrf_index = {
     "Crown 26": 218,
     "Hunter 22": 216,
     "Laser": 126,
+    "Sirius 21": 225,
     "Schock 23": 174,
     "Star": 144,
-    "Sirius 21": 225,
     "Tanzer 22": 243,
-    "Wayfarer": 234,
-    "Not Listed - Add in comments": 000,
+    "Wayfarer": 234
 }
 
 # --- FORM ---
@@ -54,7 +67,7 @@ with st.form("race_entry_form"):
     race_date = st.date_input("Race Date (Fridays only)", value=datetime.today())
     boat_name = st.text_input("Boat Name")
     skipper_name = st.text_input("Skipper Name or Nickname")
-    boat_type = st.selectbox("Boat Type", list(phrf_index.keys()))
+    boat_type = st.selectbox("Boat Type", sorted(list(phrf_index.keys())))
 
     # --- START TIME: 18:00 to 20:00 ---
     start_time_options = [
@@ -70,7 +83,7 @@ with st.form("race_entry_form"):
     ]
     finish_time = st.selectbox("Finish Time", finish_time_options, index=59)
 
-    island_options = ["Potter Island", "Swiss Island", "McCrea Island", "Norway Island", "Berry Island", "Swansea Island", "Galliard, Bass & Pike Island", "Gull Rock", "Snug", "Spooky"]
+    island_options = ["First Island", "Fourth Island", "Gull Rock", "Moon", "Ramsey", "Second Island", "Snug", "Spooky", "Third Island"]
     marks = [st.selectbox(f"Mark {i+1}", options=[""] + island_options, key=f"mark{i}") for i in range(6)]
 
     comments = st.text_area("Comments or Improvement Ideas")
@@ -159,3 +172,31 @@ try:
 
 except Exception as e:
     st.warning(f"Could not load leaderboard: {e}")
+
+# --- ANNUAL LEADERBOARD ---
+st.subheader("📅 Annual Leaderboard")
+
+try:
+    data["Year"] = data["Race Date"].dt.year
+    data["Corrected Time"] = pd.to_timedelta(data["Corrected Time"])
+
+    # Get all races per year
+    annual = data.copy()
+    annual = annual[annual["Corrected Time"].notna()]
+    annual = annual.sort_values(["Race Date", "Corrected Time"])
+
+    def assign_annual_points(group):
+        total = len(group)
+        group = group.reset_index(drop=True)
+        group["Points"] = [assign_points(i, total) for i in range(total)]
+        return group
+
+    grouped = annual.groupby("Race Date", group_keys=False).apply(assign_annual_points)
+
+    # Sum points by Skipper
+    summary = grouped.groupby("Skipper Name or Nickname")["Points"].sum().reset_index()
+    summary = summary.sort_values("Points", ascending=False)
+    st.dataframe(summary)
+
+except Exception as e:
+    st.warning(f"Could not load annual leaderboard: {e}")
