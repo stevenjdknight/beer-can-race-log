@@ -32,6 +32,20 @@ gc = gspread.authorize(creds)
 sh = gc.open_by_url("https://docs.google.com/spreadsheets/d/1mAUmYrkc1n37vrTkiZ-J8OsI5SnA7r-nYmdPIR04OZY/edit")
 worksheet = sh.worksheet("Race Entries")
 
+# --- PHRF Ratings (simplified multiplier: 1 + rating/10000) ---
+phrf_index = {
+    "Laser": 126,
+    "Hunter 22": 216,
+    "Tanzer 22": 243,
+    "Schock 23": 174,
+    "Crown 26": 218,
+    "Star": 144,
+    "CL16": 255,
+    "Albacore": 239,
+    "Wayfarer": 234,
+    "Sirius 21": 225
+}
+
 # --- FORM ---
 with st.form("race_entry_form"):
     st.subheader("Race Details")
@@ -39,7 +53,7 @@ with st.form("race_entry_form"):
     race_date = st.date_input("Race Date (Fridays only)", value=datetime.today())
     boat_name = st.text_input("Boat Name")
     skipper_name = st.text_input("Skipper Name or Nickname")
-    boat_type = st.text_input("Boat Type")
+    boat_type = st.selectbox("Boat Type", list(phrf_index.keys()))
 
     # --- START TIME: 18:00 to 20:00 ---
     start_time_options = [
@@ -72,8 +86,9 @@ with st.form("race_entry_form"):
             start_dt = datetime.combine(today, start_time)
             finish_dt = datetime.combine(today, finish_time)
             elapsed = finish_dt - start_dt
-            index = 1.0  # Placeholder for future handicap
-            corrected = elapsed * index
+            phrf = phrf_index.get(boat_type, 0)
+            multiplier = 1 + (phrf / 10000)
+            corrected = elapsed * multiplier
 
             row = [
                 race_date.strftime("%Y-%m-%d"),
