@@ -44,6 +44,7 @@ phrf_index = {
     "Sirius 21": 225,
     "Tanzer 22": 243,
     "Wayfarer": 234,
+    "Not Listed": 000,
 }
 
 # --- FORM ---
