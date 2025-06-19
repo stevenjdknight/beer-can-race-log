@@ -25,7 +25,7 @@ To log your race:
 
 # --- SCORING SYSTEM INFO ---
 st.markdown("""
-### ⛵ Scoring System
+### ⛵️ Scoring System
 Each race is scored based on the number of participating boats:
 - **1 boat** → 1 point  
 - **2 boats** → 2 pts for 1st, 1 for 2nd  
@@ -118,7 +118,8 @@ with st.form("race_entry_form"):
 
             portsmouth_rating = portsmouth_index.get(boat_type, 100.0)
             multiplier = 100.0 / portsmouth_rating if portsmouth_rating else 1.0
-            corrected = timedelta(seconds=round(elapsed.total_seconds() * multiplier))
+            corrected_seconds = round(elapsed.total_seconds() * multiplier)
+            corrected = timedelta(seconds=corrected_seconds)
 
             row = [
                 race_date.strftime("%Y-%m-%d"),
