@@ -98,7 +98,7 @@ with st.form("race_entry_form"):
     ]
     finish_time = st.selectbox("Finish Time", finish_time_options, index=59)
 
-    island_options = ["Potter Island", "Swiss Island", "McCrea Island", "Norway Island", "Berry Island", "Swansea Island", "Galliard, Bass & Pike Island", "Gull Rock", "Snug", "Spooky"]
+    island_options = ["Potter Island", "Swiss Island", "McCrea Island", "Norway Island", "Berry Island", "Swansea Island", "Galliard, Bass & Pike Island", "Ida Island"]
     marks = [st.selectbox(f"Mark {i+1}", options=[""] + island_options, key=f"mark{i}") for i in range(6)]
 
     comments = st.text_area("Comments or Improvement Ideas")
@@ -118,7 +118,7 @@ with st.form("race_entry_form"):
 
             portsmouth_rating = portsmouth_index.get(boat_type, 100.0)
             multiplier = 100.0 / portsmouth_rating if portsmouth_rating else 1.0
-            corrected = timedelta(seconds=elapsed.total_seconds() * multiplier)
+            corrected = timedelta(seconds=round(elapsed.total_seconds() * multiplier))
 
             row = [
                 race_date.strftime("%Y-%m-%d"),
