@@ -32,7 +32,7 @@ Each race is scored based on the number of participating boats:
 - **3 boats** → 3 pts / 2 pts / 1 pt  
 - **4+ boats** → 4 pts for 1st, 3 pts for 2nd, 2 pts for 3rd, 1 pt for all others  
 
-Scoring is ranked by **Corrected Time**.
+Scoring is ranked by **Corrected Time using Portsmouth-based multiplier**.
 """)
 
 # --- AUTH ---
@@ -115,9 +115,10 @@ with st.form("race_entry_form"):
             start_dt = datetime.combine(today, start_time)
             finish_dt = datetime.combine(today, finish_time)
             elapsed = finish_dt - start_dt
-            portsmouth = portsmouth_index.get(boat_type, 100.0)
-            multiplier = 100.0 / portsmouth
-            corrected = elapsed * multiplier
+
+            portsmouth_rating = portsmouth_index.get(boat_type, 100.0)
+            multiplier = 100.0 / portsmouth_rating if portsmouth_rating else 1.0
+            corrected = timedelta(seconds=elapsed.total_seconds() * multiplier)
 
             row = [
                 race_date.strftime("%Y-%m-%d"),
