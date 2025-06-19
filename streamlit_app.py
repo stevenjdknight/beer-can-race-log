@@ -25,7 +25,7 @@ To log your race:
 
 # --- SCORING SYSTEM INFO ---
 st.markdown("""
-### 🏍️ Scoring System
+### ⛵ Scoring System
 Each race is scored based on the number of participating boats:
 - **1 boat** → 1 point  
 - **2 boats** → 2 pts for 1st, 1 for 2nd  
