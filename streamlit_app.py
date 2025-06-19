@@ -25,7 +25,7 @@ To log your race:
 
 # --- SCORING SYSTEM INFO ---
 st.markdown("""
-### ⛵️ Scoring System
+### ⛵ Scoring System
 Each race is scored based on the number of participating boats:
 - **1 boat** → 1 point  
 - **2 boats** → 2 pts for 1st, 1 for 2nd  
@@ -118,8 +118,7 @@ with st.form("race_entry_form"):
 
             portsmouth_rating = portsmouth_index.get(boat_type, 100.0)
             multiplier = 100.0 / portsmouth_rating if portsmouth_rating else 1.0
-            corrected_seconds = round(elapsed.total_seconds() * multiplier)
-            corrected = timedelta(seconds=corrected_seconds)
+            corrected = timedelta(seconds=round(elapsed.total_seconds() * multiplier))
 
             row = [
                 race_date.strftime("%Y-%m-%d"),
@@ -136,3 +135,95 @@ with st.form("race_entry_form"):
             ]
             worksheet.append_row(row)
             st.success("Race entry submitted successfully!")
+
+# --- WEEKLY LEADERBOARD ---
+st.subheader("\U0001F4CA Weekly Leaderboard")
+
+try:
+    expected_headers = [
+        "Race Date", "Boat Name", "Skipper Name or Nickname", "Boat Type",
+        "Start Time", "Finish Time", "Elapsed Time", "Corrected Time",
+        "Mark 1", "Mark 2", "Mark 3", "Mark 4", "Mark 5", "Mark 6",
+        "Comments or Improvement Ideas", "Submission Timestamp"
+    ]
+    data = pd.DataFrame(worksheet.get_all_records(expected_headers=expected_headers))
+    data["Race Date"] = pd.to_datetime(data["Race Date"], errors="coerce")
+    data = data.dropna(subset=["Race Date"])
+
+    latest_friday = data["Race Date"].max()
+    week_data = data[data["Race Date"] == latest_friday].copy()
+
+    # Filter malformed corrected times
+    week_data = week_data[week_data["Corrected Time"].astype(str).str.strip() != ""]
+    week_data = week_data[~week_data["Corrected Time"].astype(str).str.contains("nan", na=False)]
+
+    if week_data.empty:
+        st.warning("No valid entries found for the latest race. Check formatting or try re-entering a log.")
+    else:
+        week_data["Corrected Time"] = pd.to_timedelta(week_data["Corrected Time"], errors="coerce")
+        week_data["Elapsed Time"] = pd.to_timedelta(week_data["Elapsed Time"], errors="coerce")
+        week_data = week_data.sort_values("Corrected Time")
+
+        num_boats = len(week_data)
+
+        def assign_points(rank, total):
+            if total == 1:
+                return 1
+            elif total == 2:
+                return 2 - rank if rank < 2 else 0
+            elif total == 3:
+                return max(0, 3 - rank)
+            elif total >= 4:
+                if rank == 0:
+                    return 4
+                elif rank == 1:
+                    return 3
+                elif rank == 2:
+                    return 2
+                else:
+                    return 1
+            return 0
+
+        week_data["Points"] = [assign_points(i, num_boats) for i in range(num_boats)]
+
+        st.dataframe(week_data[[
+            "Skipper Name or Nickname",
+            "Boat Name",
+            "Elapsed Time",
+            "Corrected Time",
+            "Points"
+        ]])
+
+    # --- ANNUAL LEADERBOARD ---
+    st.subheader("\U0001F3C6 Annual Leaderboard")
+    data = data[data["Corrected Time"].astype(str).str.strip() != ""]
+    data = data[~data["Corrected Time"].astype(str).str.contains("nan", na=False)]
+    data["Corrected Time"] = pd.to_timedelta(data["Corrected Time"], errors="coerce")
+    data["Elapsed Time"] = pd.to_timedelta(data["Elapsed Time"], errors="coerce")
+    data = data.dropna(subset=["Corrected Time", "Elapsed Time"])
+    data = data.sort_values("Race Date")
+    data["Race Year"] = data["Race Date"].dt.year
+
+    def compute_annual_points(df):
+        result_rows = []
+        for date, group in df.groupby("Race Date"):
+            group = group.sort_values("Corrected Time").reset_index(drop=True)
+            total = len(group)
+            for i, row in group.iterrows():
+                points = assign_points(i, total)
+                result_rows.append({
+                    "Skipper Name or Nickname": row["Skipper Name or Nickname"],
+                    "Race Year": row["Race Year"],
+                    "Points": points
+                })
+        result_df = pd.DataFrame(result_rows)
+        return result_df.groupby(["Race Year", "Skipper Name or Nickname"]).sum().reset_index()
+
+    annual = compute_annual_points(data)
+    latest_year = annual["Race Year"].max()
+    leaderboard = annual[annual["Race Year"] == latest_year].sort_values("Points", ascending=False)
+
+    st.dataframe(leaderboard)
+
+except Exception as e:
+    st.warning(f"Could not load leaderboard: {e}")
