@@ -6,10 +6,10 @@ from datetime import datetime, time, timedelta
 import json
 
 # --- CONFIG ---
-st.set_page_config(page_title=" Beer Can Race Log (BCS)", layout="wide")
+st.set_page_config(page_title=" Beer Can Race Log", layout="wide")
 
 # --- TITLE ---
-st.title(" Beer Can Scrimmage Race Entry Form")
+st.title(" Beer Can Scrimmage (BCS) Race Entry Form")
 
 # --- INSTRUCTIONS ---
 st.markdown("""
