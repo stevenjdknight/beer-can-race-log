@@ -164,6 +164,13 @@ try:
         week_data["Elapsed Time"] = pd.to_timedelta(week_data["Elapsed Time"], errors="coerce")
         week_data = week_data.sort_values("Corrected Time")
 
+        week_data["Corrected Time"] = week_data["Corrected Time"].dt.components.apply(
+            lambda row: f"{int(row.hours):02}:{int(row.minutes):02}:{int(row.seconds):02}", axis=1
+        )
+        week_data["Elapsed Time"] = week_data["Elapsed Time"].dt.components.apply(
+            lambda row: f"{int(row.hours):02}:{int(row.minutes):02}:{int(row.seconds):02}", axis=1
+        )
+
         num_boats = len(week_data)
 
         def assign_points(rank, total):
