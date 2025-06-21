@@ -87,28 +87,6 @@ portsmouth_index = {
     "Not Listed - Add in comments": 100.0
 }
 
-    "Hunter 22": 90.0,
-    "Laser": 91.1,
-    "Laser II": 88.0,
-    "Mutineer 15": 91.4,
-    "Optimist": 123.6,
-    "Paceship 23": 96.0,
-    "Sandpiper": 105.0,
-    "Schock 23": 89.0,
-    "Shark 24": 107,
-    "Siren": 101.2,
-    "Sirius 21/22": 92.5,
-    "Soling": 83.0,
-    "Star": 87.0,
-    "Tanzer 22": 94.0,
-    "Tanzer 26": 90.5,
-    "Tanzer 7.5": 91.0,
-    "Venture macgregor": 96.0,
-    "Wayfarer": 95.5,
-    "Y-Flyer": 90.0,
-    "Not Listed - Add in comments": 100.0
-}
-
 # --- FORM ---
 with st.form("race_entry_form"):
     st.subheader("Race Details")
