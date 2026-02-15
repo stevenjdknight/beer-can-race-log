@@ -6,7 +6,7 @@ from datetime import datetime, time, timedelta
 import json
 
 # --- CONFIG ---
-st.set_page_config(page_title=" Beer Can Race Log", layout="wide")
+st.set_page_config(page_title=" Friday Sail & Sizzle", layout="wide")
 
 # --- TITLE ---
 st.title(" Friday Sail & Sizzle - 2026 MOB - Entry Form")
@@ -15,10 +15,9 @@ st.title(" Friday Sail & Sizzle - 2026 MOB - Entry Form")
 st.markdown("""
 ### ℹ️ Instructions
 To log your race:
-- Ensure the race was held on a **Friday**
+- Ensure the entry is dated fo the **Friday**
 - Provide start and finish times using the dropdowns
-- Choose up to 6 islands (marks) rounded during the race
-- Your race result will appear on the weekly leaderboard
+- Your result will appear on the weekly leaderboard
 
 **Note:** Both weekly and annual leaderboards are displayed. If no new entry is submitted this week, the last race's results will continue to show.
 """)
@@ -244,5 +243,6 @@ try:
 
 except Exception as e:
     st.warning(f"Could not load leaderboard: {e}")
+
 
 
