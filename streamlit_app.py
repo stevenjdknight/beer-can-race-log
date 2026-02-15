@@ -9,7 +9,7 @@ import json
 st.set_page_config(page_title=" Beer Can Race Log", layout="wide")
 
 # --- TITLE ---
-st.title(" Friday Sail & Sizzle - MOB - Entry Form")
+st.title(" Friday Sail & Sizzle - 2026 MOB - Entry Form")
 
 # --- INSTRUCTIONS ---
 st.markdown("""
@@ -244,4 +244,5 @@ try:
 
 except Exception as e:
     st.warning(f"Could not load leaderboard: {e}")
+
 
